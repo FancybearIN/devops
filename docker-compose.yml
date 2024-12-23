@@ -1,0 +1,14 @@
+version: "3.9"
+services:
+  jenkins:
+    image: jenkins/jenkins:lts
+    ports:
+      - "8080:8080"
+    volumes:  # Important for Jenkins data persistence
+      - jenkins_home:/var/jenkins_home
+  nextjs-app:
+    # ... your Next.js app definition
+    depends_on:
+      - jenkins # Ensure Jenkins starts first
+volumes:
+  jenkins_home: # Named volume for Jenkins data
