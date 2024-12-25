@@ -1,0 +1,40 @@
+pipeline {
+    agent any
+    environment {
+        DOCKER_IMAGE = 'pb26uk/khushi:latest'
+        WEBSITE_CONTAINER_NAME = 'khushi'
+    }
+    stages {
+        stage('Clone Repository') {
+            steps {
+                // Pull code from GitHub
+                git branch: 'main', url: 'https://github.com/FancybearIN/devops.git'
+            }
+        }
+        stage('Pull Docker Image') {
+            steps {
+                // Pull the latest Docker image from Docker Hub
+                sh 'docker pull $DOCKER_IMAGE'
+            }
+        }
+        stage('Deploy Website') {
+            steps {
+                // Stop and remove the existing container
+                sh """
+                docker stop $WEBSITE_CONTAINER_NAME || true
+                docker rm $WEBSITE_CONTAINER_NAME || true
+                """
+                // Run a new container with the updated image
+                sh """
+                docker run -d \
+                    --name $WEBSITE_CONTAINER_NAME \
+                    --network jenkins_network \
+                    -p 80:80 \
+                    -e PORT=80 \
+                    -v /var/run/docker.sock:/var/run/docker.sock \
+                    $DOCKER_IMAGE
+                """
+            }
+        }
+    }
+}
